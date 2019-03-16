@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Upload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Events\UploadCreated;
+use Illuminate\Support\Facades\File;
 
 class UploadController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth', ['only' => ['update', 'destroy']]);
+        $this->middleware('auth:api', ['only' => ['update', 'destroy']]);
     }
 
     /**
@@ -20,7 +22,7 @@ class UploadController extends Controller
      */
     public function index()
     {
-        return Upload::all();
+        return Upload::orderBy('created_at', 'DESC')->get();
     }
 
     /**
@@ -40,11 +42,13 @@ class UploadController extends Controller
         {
             $filePath = $request->file('zip')->store('public');
 
-            Upload::create([
+            $upload = Upload::create([
                 'filename' => $request->file('zip')->hashName(),
                 'original_filename' => $request->file('zip')->getClientOriginalName(),
                 'path' => $filePath
             ]);
+
+            event(new UploadCreated($upload));
         }
         else
         {
@@ -78,7 +82,7 @@ class UploadController extends Controller
             'zip' => 'required|file|mimes:zip|max:1024',
         ]);
 
-        Storage::disk('public')->delete($upload->path);
+        File::delete(public_path() . '/storage/'. $upload->filename);
 
         $path = $request->file('zip')->store('public');
 
@@ -102,6 +106,8 @@ class UploadController extends Controller
      */
     public function destroy(Upload $upload)
     {
+        File::delete(public_path() . '/storage/'. $upload->filename);
+
         $successful = $upload->delete();
 
         return response()->json(['success' => $successful]);

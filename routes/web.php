@@ -11,8 +11,10 @@
 |
 */
 
-Route::resource('/', IndexController::class);
+Route::get('/', function () {
+    return view('index');
+});
 
-Auth::routes();
+Auth::routes(['register' => env('REGISTRATION_ENABLED')]);
 
 Route::get('/dashboard', 'DashboardController@index')->name('dashboard');

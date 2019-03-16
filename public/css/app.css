@@ -10655,8 +10655,12 @@ a.text-dark:focus {
   }
 }
 
-.navbar-laravel {
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+.bg-not-so-dark {
+  background-color: rgba(33, 102, 180, 0.5);
+  color: rgba(255, 255, 255, 0.87) !important;
+}
+
+.text-slightly-muted {
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
