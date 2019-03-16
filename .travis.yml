@@ -12,6 +12,8 @@ before_script:
 script:
 - php artisan key:generate
 - php artisan storage:link
+- php artisan migrate
+- php artisan passport:install
 - vendor/bin/phpunit --coverage-clover=coverage.xml
 notifications:
   email: false

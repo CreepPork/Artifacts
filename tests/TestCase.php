@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Passport\Passport;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -31,7 +32,7 @@ abstract class TestCase extends BaseTestCase
     {
         $user = $user ?? $this->create('App\User');
 
-        $this->actingAs($user);
+        Passport::actingAs($user);
 
         return $this;
     }

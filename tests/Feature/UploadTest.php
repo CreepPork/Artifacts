@@ -18,7 +18,6 @@ class UploadTest extends TestCase
 
         $upload = $this->create(Upload::class);
 
-        $this->get('/')->assertSee($upload->filename);
         $this->get('/api/upload')->assertSee($upload->filename);
         $this->get('/api/upload/' . $upload->id)->assertSee($upload->filename);
     }
