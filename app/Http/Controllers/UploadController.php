@@ -4,9 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Upload;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth', ['only' => ['update', 'destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -26,7 +32,7 @@ class UploadController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'zip' => 'required|file',
+            'zip' => 'required|file|mimes:zip|max:1024',
             'accessToken' => 'required|string'
         ]);
 
@@ -35,15 +41,16 @@ class UploadController extends Controller
             $filePath = $request->file('zip')->store('public');
 
             Upload::create([
-                'name' => $request->file('zip')->getClientOriginalName(),
-                'url' => $filePath
+                'filename' => $request->file('zip')->hashName(),
+                'original_filename' => $request->file('zip')->getClientOriginalName(),
+                'path' => $filePath
             ]);
         }
         else
         {
             return response()->json([
                 'accessToken' => 'The access token is invalid.'
-            ], 401);
+            ], 403);
         }
     }
 
@@ -55,7 +62,7 @@ class UploadController extends Controller
      */
     public function show(Upload $upload)
     {
-        //
+        return $upload;
     }
 
     /**
@@ -67,7 +74,24 @@ class UploadController extends Controller
      */
     public function update(Request $request, Upload $upload)
     {
-        //
+        $request->validate([
+            'zip' => 'required|file|mimes:zip|max:1024',
+        ]);
+
+        Storage::disk('public')->delete($upload->path);
+
+        $path = $request->file('zip')->store('public');
+
+        $fileName = $request->file('zip')->hashName();
+        $originalFileName = $request->file('zip')->getClientOriginalName();
+
+        $upload->update([
+            'filename' => $fileName,
+            'original_filename' => $originalFileName,
+            'path' => $path
+        ]);
+
+        return response()->json($upload);
     }
 
     /**
@@ -78,6 +102,8 @@ class UploadController extends Controller
      */
     public function destroy(Upload $upload)
     {
-        //
+        $successful = $upload->delete();
+
+        return response()->json(['success' => $successful]);
     }
 }
